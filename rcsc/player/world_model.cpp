@@ -58,6 +58,8 @@
 #include <limits>
 #include <cassert>
 #include <cmath>
+#include <cstdlib>
+#include <cstring>
 
 // #define DEBUG_PROFILE
 // #define DEBUG_PRINT
@@ -1246,7 +1248,9 @@ WorldModel::updateAfterSee( const VisualSensor & see,
                       __FILE__" (updateAfterSee) already updated by fullstate" );
 #endif
         // stored info
-        ViewArea varea( self().viewWidth().width(),
+        ViewArea varea( ( std::getenv( "CYRUS_ALL_PLAYERS_VISIBLE" )
+                          && std::strcmp( std::getenv( "CYRUS_ALL_PLAYERS_VISIBLE" ), "1" ) == 0 )
+                        ? 360.0 : self().viewWidth().width(),
                         self().pos(),
                         self().face(),
                         current );
@@ -1283,7 +1287,9 @@ WorldModel::updateAfterSee( const VisualSensor & see,
          && self().viewQuality() == ViewQuality::HIGH )
     {
         // stored info
-        ViewArea varea( self().viewWidth().width(),
+        ViewArea varea( ( std::getenv( "CYRUS_ALL_PLAYERS_VISIBLE" )
+                          && std::strcmp( std::getenv( "CYRUS_ALL_PLAYERS_VISIBLE" ), "1" ) == 0 )
+                        ? 360.0 : self().viewWidth().width(),
                         self().pos(),
                         self().face(),
                         current );
@@ -5589,6 +5595,12 @@ WorldModel::checkGhost( const ViewArea & varea )
 void
 WorldModel::updateDirCount( const ViewArea & varea )
 {
+    if ( varea.viewWidth() >= 360.0 )
+    {
+        std::fill( M_dir_count, M_dir_count + DIR_CONF_DIVS, 0 );
+        return;
+    }
+
     const double dir_buf// = DIR_STEP * 0.5;
         = ( ( self().lastMove().isValid()
               && self().lastMove().r() > 0.5 )

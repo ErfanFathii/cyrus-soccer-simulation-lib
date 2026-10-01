@@ -40,6 +40,8 @@
 #include <algorithm>
 #include <iostream>
 #include <cmath>
+#include <cstdlib>
+#include <cstring>
 
 namespace rcsc {
 
@@ -2323,6 +2325,17 @@ ObjectTable::getStaticObjInfo( const double & see_dist,
                                double * ave,
                                double * err ) const
 {
+    // Research Gaussian contract: focus noise disabled, sigma = rate * distance.
+    // Keep the live distance; this is decoding, not a trained denoiser.
+    const char * channel = std::getenv( "CYRUS_GAUSSIAN_SEE" );
+    if ( channel && std::strcmp( channel, "1" ) == 0 )
+    {
+        if ( ! std::isfinite( see_dist ) || see_dist < 0.0 ) return false;
+        *ave = see_dist;
+        *err = std::max( 0.05, 3.0 * 0.0025 * see_dist );
+        return true;
+    }
+
     std::vector< DataEntry >::const_iterator
         it = std::lower_bound( M_static_table.begin(),
                                M_static_table.end(),
@@ -2354,6 +2367,17 @@ ObjectTable::getMovableObjInfo( const double & see_dist,
                                 double * ave,
                                 double * err ) const
 {
+    // Research Gaussian contract: focus noise disabled, sigma = rate * distance.
+    // Keep the live distance; this is decoding, not a trained denoiser.
+    const char * channel = std::getenv( "CYRUS_GAUSSIAN_SEE" );
+    if ( channel && std::strcmp( channel, "1" ) == 0 )
+    {
+        if ( ! std::isfinite( see_dist ) || see_dist < 0.0 ) return false;
+        *ave = see_dist;
+        *err = std::max( 0.05, 3.0 * 0.025 * see_dist );
+        return true;
+    }
+
 
     std::vector< DataEntry >::const_iterator
         it = std::lower_bound( M_movable_table.begin(),
@@ -2384,6 +2408,17 @@ ObjectTable::getLandmarkDistanceRangeV18( const ViewWidth::Type view_width,
                                           double * mean_dist,
                                           double * dist_error ) const
 {
+    // Research Gaussian contract: focus noise disabled, sigma = rate * distance.
+    // Keep the live distance; this is decoding, not a trained denoiser.
+    const char * channel = std::getenv( "CYRUS_GAUSSIAN_SEE" );
+    if ( channel && std::strcmp( channel, "1" ) == 0 )
+    {
+        if ( ! std::isfinite( quant_dist ) || quant_dist < 0.0 ) return false;
+        *mean_dist = quant_dist;
+        *dist_error = std::max( 0.05, 3.0 * 0.0025 * quant_dist );
+        return true;
+    }
+
     const std::vector< DataEntry > * table = ( view_width == ViewWidth::NARROW
                                                ? &M_static_table_v18_narrow
                                                : view_width == ViewWidth::NORMAL
@@ -2418,6 +2453,17 @@ ObjectTable::getDistanceRangeV18( const ViewWidth::Type view_width,
                                   double * mean_dist,
                                   double * dist_error ) const
 {
+    // Research Gaussian contract: focus noise disabled, sigma = rate * distance.
+    // Keep the live distance; this is decoding, not a trained denoiser.
+    const char * channel = std::getenv( "CYRUS_GAUSSIAN_SEE" );
+    if ( channel && std::strcmp( channel, "1" ) == 0 )
+    {
+        if ( ! std::isfinite( quant_dist ) || quant_dist < 0.0 ) return false;
+        *mean_dist = quant_dist;
+        *dist_error = std::max( 0.05, 3.0 * 0.025 * quant_dist );
+        return true;
+    }
+
     const std::vector< DataEntry > * table = ( view_width == ViewWidth::NARROW
                                                ? &M_movable_table_v18_narrow
                                                : view_width == ViewWidth::NORMAL
